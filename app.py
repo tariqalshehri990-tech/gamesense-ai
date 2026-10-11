@@ -1,0 +1,10 @@
+import streamlit as st
+st.set_page_config(page_title="GameSense AI", page_icon="⚽", layout="wide")
+st.title("⚽ GameSense AI - Autonomous Football Intelligence Studio")
+st.caption("Powered by Azure OpenAI + Fabric + AI Speech")
+c1,c2,c3 = st.columns(3)
+c1.metric("Time", "67:23", "Live")
+c2.metric("Score", "LIV 2-1 ARS")
+c3.metric("xG", "1.82 vs 0.94")
+st.success("Tactical: HIGH PRESS at 66:12 - Liverpool wins ball")
+st.info("AR: ضغط عالي من ليفربول!")
