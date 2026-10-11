@@ -1,23 +1,24 @@
-# gimesense-ai
-GameSense AI - Real-time Premier League intelligence that explains why goals happen. Built with Azure OpenAI, Fabric &amp; AI Speech. &lt;500ms tactical narration in AR/EN/ES.
-import streamlit as st
-st.set_page_config(page_title="GameSense AI", layout="wide", page_icon="⚽")
-st.title("⚽ GameSense AI - Autonomous Football Intelligence Studio")
-st.caption("Powered by Azure OpenAI + Fabric + AI Speech | Inside the Game Hackathon")
+# GameSense AI - Autonomous Football Intelligence Studio
+### Premier League x Microsoft Hackathon 2026
 
-c1,c2,c3,c4 = st.columns(4)
-c1.metric("Match Time", "67:23", "+ Live")
-c2.metric("Score", "LIV 2 - 1 ARS")
-c3.metric("xG Live", "1.82 vs 0.94")
-c4.metric("Pressure", "78%", "High")
+**Live Demo:** (coming soon)
+**Video:** (coming soon)
 
-t1,t2,t3 = st.tabs(["🎙️ Live Narrator", "📖 Story Engine", "🔮 Fan Agent"])
-with t1:
-    st.success("Tactical: HIGH PRESS TRIGGER at 66:12 - Robertson presses Odegaard")
-    st.info("AR: ليفربول يواصل الضغط العالي! صلاح يتقدم بالكرة")
-    st.info("EN: Brilliant high press! Salah steals it, overload ON!")
-with t2:
-    st.metric("Rarity", "1 in 28 matches")
-    st.write("Fabric: After such miss, LIV scores in 10 mins in 62% cases")
-with t3:
-    st.json({"LIV Win Prob": "74%", "Fantasy": "Salah +3 pts"})
+## The Problem
+Fans see *what* happened (2-1). Broadcasters need *why* it happened in <500ms, in Arabic & English.
+
+## The Solution - 3 AI Layers
+1. **Live Tactical Narrator (<500ms):** Uses Azure OpenAI in Foundry to detect HIGH_PRESS, OVERLOAD patterns and explains them.
+2. **Contextual Story Engine:** Microsoft Fabric queries 5 years PL data to calculate rarity (e.g., "1 in 28 miss") and finds historical parallels.
+3. **Predictive Fan Agent:** Cosmos DB predicts Fantasy points and substitution risk.
+
+## Microsoft Stack (Judging Criteria)
+- **GitHub + Copilot:** Full development
+- **Microsoft Foundry + GPT-4o:** Orchestrator Agent
+- **Azure AI Speech:** AR/EN/ES commentary
+- **Microsoft Fabric:** Historical data
+- **Azure Container Apps:** Deployment
+
+## How to Run
+pip install -r requirements.txt
+streamlit run app.py
