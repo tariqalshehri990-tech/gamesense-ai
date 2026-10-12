@@ -253,13 +253,19 @@ class Overlay:
         frame[y:y + h, x:x + w] = r
 
 
-def render(video, out, cache=None, audio=True, profile="investor", progress=print):
+def render(video, out, cache=None, audio=True, profile="investor", voice=None, cuts=(), progress=print):
     tr, evs, Hm = pipeline.analyse(video, cache=cache)
     facts, ar, en = build_sessions(evs)
     cap = cv2.VideoCapture(video)
     n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     dur = n / tr.fps
     story = Story(tr, evs, facts, ar, en, dur, profile)
+    if voice:                                    # captions stay up while the recorded line is spoken; the last frame holds if needed
+        for u, s in zip(story.utt, recorded_segments(voice, cuts, 24000)):
+            u["end"] = u["start"] + len(s) / 24000 + 0.15
+        dur = max(dur, max(u["end"] for u in story.utt) - T0 + 1.0)
+        story.dur = dur
+    total = int(dur * tr.fps)
     ov = Overlay(tr, Hm, evs)
     hud = Hud()
     cache_h: dict[str, tuple[np.ndarray, np.ndarray]] = {}
@@ -268,12 +274,18 @@ def render(video, out, cache=None, audio=True, profile="investor", progress=prin
                            "-r", str(tr.fps), "-i", "-", "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p", silent],
                           stdin=subprocess.PIPE)
     f = 0
+    last = None
     state_key = ""
     n_states = 0
     while True:
-        ok, fr = cap.read()
-        if not ok or f >= len(tr.ball):
+        if f >= total:
             break
+        ok, fr = cap.read()
+        if ok:
+            last = fr
+        else:
+            fr = last
+        fd = min(f, len(tr.ball) - 1)
         t = f / tr.fps
         fr = cv2.resize(fr, (OW, OH), interpolation=cv2.INTER_CUBIC)
         if f % 6 == 0 or not state_key:
@@ -286,7 +298,7 @@ def render(video, out, cache=None, audio=True, profile="investor", progress=prin
                 a = rgba[..., 3:4].astype(np.float32) / 255
                 cache_h[state_key] = (1 - a, rgba[..., :3][..., ::-1].astype(np.float32) * a)
         poss = story.possessor(t)
-        fr, radar = ov.draw(fr, f, t, poss, cache_h)
+        fr, radar = ov.draw(fr, fd, t, poss, cache_h)
         inv_a, premul = cache_h[state_key]
         fr = (fr.astype(np.float32) * inv_a + premul).astype(np.uint8)
         ov.paste_radar(fr, radar)
@@ -295,12 +307,12 @@ def render(video, out, cache=None, audio=True, profile="investor", progress=prin
         ff.stdin.write(fr.tobytes())
         f += 1
         if f % 100 == 0:
-            progress(f"{f}/{n} frames, {n_states} HUD states")
+            progress(f"{f}/{total} frames, {n_states} HUD states")
     ff.stdin.close()
     ff.wait()
     hud.close()
     if audio:
-        wav = narration(story.utt, dur)
+        wav = narration(story.utt, dur, voice=voice, cuts=cuts)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", silent, "-i", wav, "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
                         "-shortest", out], check=True)
         Path(silent).unlink()
@@ -309,21 +321,45 @@ def render(video, out, cache=None, audio=True, profile="investor", progress=prin
     return dict(frames=f, seconds=round(dur, 1), hud_states=n_states, utterances=len(story.utt))
 
 
-def narration(utts, dur, rate=24000):
+def recorded_segments(path, cuts, rate):
+    """Cut one continuous recording of the commentary lines into per-line clips (cuts = seconds between lines)."""
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", path, "-af", "highpass=f=80,loudnorm=I=-16:TP=-1.5", "-f", "s16le", "-ac", "1", "-ar", str(rate), "-"],
+                         capture_output=True, check=True).stdout
+    x = np.frombuffer(raw, "<i2").astype(np.float32) / 32768
+    edges = [0.0, *cuts, len(x) / rate]
+    out = []
+    for a, b in zip(edges, edges[1:]):
+        s = x[int(a * rate):int(b * rate)]
+        loud = np.where(np.abs(s) > 0.02)[0]
+        if len(loud):
+            s = s[max(0, loud[0] - int(0.06 * rate)):loud[-1] + int(0.1 * rate)]
+        out.append(s)
+    return out
+
+
+def narration(utts, dur, rate=24000, voice=None, cuts=()):
     """Piper clips placed at the moment each caption starts, plus a soft crowd bed."""
-    from scripts.build_audio import Piper
-    pp = Piper()
+    pp = None
+    segs = recorded_segments(voice, cuts, rate) if voice else None
+    if segs is None:
+        from scripts.build_audio import Piper
+        pp = Piper()
     buf = np.zeros(int((dur + 1) * rate), np.float32)
     rng = np.random.default_rng(3)
     noise = rng.normal(0, 1, len(buf)).astype(np.float32)
     k = np.ones(40, np.float32) / 40
     bed = np.convolve(noise, k, mode="same") * 0.035
     buf += bed
-    for u in utts:
-        pcm, r = pp.wav(u["text"], "ar")
-        a = np.frombuffer(pcm, "<i2").astype(np.float32) / 32768
-        if r != rate:
-            a = np.interp(np.linspace(0, len(a) - 1, int(len(a) * rate / r)), np.arange(len(a)), a)
+    for n, u in enumerate(utts):
+        if segs is not None:
+            if n >= len(segs):
+                continue
+            a = segs[n]
+        else:
+            pcm, r = pp.wav(u["text"], "ar")
+            a = np.frombuffer(pcm, "<i2").astype(np.float32) / 32768
+            if r != rate:
+                a = np.interp(np.linspace(0, len(a) - 1, int(len(a) * rate / r)), np.arange(len(a)), a)
         i0 = int((u["start"] - T0) * rate)
         seg = slice(i0, i0 + len(a))
         buf[seg] *= 0.45                                    # duck the crowd under the voice
@@ -344,5 +380,7 @@ if __name__ == "__main__":
     ap.add_argument("--cache")
     ap.add_argument("--no-audio", action="store_true")
     ap.add_argument("--profile", default="investor")
+    ap.add_argument("--voice", help="recording of the caption lines, read in order")
+    ap.add_argument("--cuts", default="", help="comma-separated seconds where one line ends and the next begins")
     a = ap.parse_args()
-    print(render(a.video, a.out, a.cache, not a.no_audio, a.profile))
+    print(render(a.video, a.out, a.cache, not a.no_audio, a.profile, a.voice, tuple(float(c) for c in a.cuts.split(",") if c)))
