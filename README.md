@@ -36,7 +36,7 @@ Works fully offline (template backend). To enable Foundry phrasing: `pip install
 ### Voice
 The 🔊 button speaks each line. With `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` set, the server's `POST /api/tts` returns Azure AI Speech audio (`ar-SA-HamedNeural`, `en-GB-RyanNeural`). Without them, the browser's own speech voice is used. A cut-off line is cut in the audio too: a new line stops the previous one. The Azure path is **untested against the live service** (no key was available while building); the browser path works where the device has an Arabic voice. Best at 6× or 1× speed.
 
-The standalone `demo/index.html` carries pre-rendered clips so it speaks on any device (some browsers expose no speech voices at all). Clips are made offline with **Piper neural voices** (Arabic `ar_JO-kareem`, English `en_GB-alan`) through `sherpa-onnx`; the Arabic text is vocalised first by `scripts/arabic_prep.py` (a lexicon for our closed phrasebook), because the Arabic voice expects diacritics. Build: `pip install sherpa-onnx`, unpack the two `vits-piper-*` models from the sherpa-onnx `tts-models` release into `/tmp/tts` (or `$NAFAS_PIPER_DIR`), then `python scripts/build_audio.py && python scripts/build_demo.py`. The voice is Jordanian-accented MSA, not Saudi; a Whisper-small round trip recovered about half of the Arabic words exactly (names are the weakest part), so treat it as a demo voice. For neural Saudi-locale quality use Azure: `AZURE_SPEECH_KEY=... AZURE_SPEECH_REGION=... python scripts/build_audio.py --azure`. `--espeak` selects the old robotic fallback.
+The standalone `demo/index.html` carries pre-rendered clips so it speaks on any device (some browsers expose no speech voices at all). Clips are made offline with **Piper neural voices** (Arabic `ar_JO-kareem`, English `en_GB-alan`) through `sherpa-onnx`; the Arabic text is vocalised first by `scripts/arabic_prep.py` (a lexicon for our closed phrasebook), because the Arabic voice expects diacritics. Build: `pip install sherpa-onnx`, unpack the two `vits-piper-*` models from the sherpa-onnx `tts-models` release into `/tmp/tts` (or `$NAFAS_PIPER_DIR`), then `python scripts/build_audio.py && python scripts/build_demo.py`. The voice is Jordanian-accented MSA, not Saudi; a Whisper-small round trip recovered about half of the Arabic words exactly (names are the weakest part), so treat it as a demo voice. For neural Saudi-locale quality use Azure: `AZURE_SPEECH_KEY=... AZURE_SPEECH_REGION=... python scripts/build_audio.py --azure`. `--elevenlabs` (needs `ELEVENLABS_API_KEY`) is the other recommended route; neither was run live here. `--espeak` selects the old robotic fallback.
 
 ## Validation
 - Simulator calibrated to Premier League averages (~25 shots/match, ~0.115 xG/shot, ~11% conversion).
@@ -50,3 +50,13 @@ The standalone `demo/index.html` carries pre-rendered clips so it speaks on any 
 - The pulse band covers skill uncertainty only. What-if is computed against the full-match ledger.
 - Auto-detection of events from video is simulated, not implemented.
 - Arabic text is Saudi-flavoured; Azure's ar-SA voices read Modern Standard Arabic, not dialect.
+
+## Video analysis (camera → events → Nafas)
+
+`nafas/vision/` turns match video into the same `Match`/`Shot` facts the rest of Nafas runs on: background subtraction and kit-colour segmentation per frame, pitch-landmark calibration (RANSAC homography), Kalman + Hungarian tracking of 16 players and the ball, then possession / pass / shot / save / goal inference from the ball trajectory (`events.py`), a bridge into the xG + skill-vs-luck engine (`bridge.py`), and `compose.py`, which renders the broadcast overlay (tracking rings, pass lines, shot cones, radar, Arabic/English captions, breath lanes, live ledger card) and mixes the narration.
+
+```
+pip install -r requirements-vision.txt && playwright install chromium   # HUD is rendered in Chromium for Arabic shaping
+PYTHONPATH=. python -m nafas.vision.compose input.mp4 out.mp4 --cache dets.pkl
+```
+`demo/nafas_vision.mp4` is the result on a **synthetic** 44 s clip made by `nafas/vision/synth.py` + `render.py` (rule 4.7: synthetic data only; we hold no rights to broadcast footage). Honest limits: the tracker was validated against that generator's own ground truth, which is a circular test; it assumes one static wide camera; real footage (occlusion, camera pan, kit clashes) is untested. Piper narration, not Azure.

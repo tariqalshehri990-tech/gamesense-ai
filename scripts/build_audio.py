@@ -109,6 +109,7 @@ def to_mp3(pcm: bytes, rate: int) -> bytes:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--azure", action="store_true")
+    ap.add_argument("--elevenlabs", action="store_true", help="ELEVENLABS_API_KEY (+ optional ELEVENLABS_VOICE_ID); multilingual v2 reads Arabic well")
     ap.add_argument("--espeak", action="store_true", help="use the robotic espeak-ng fallback")
     args = ap.parse_args()
     lines = all_lines()
@@ -117,6 +118,14 @@ def main() -> None:
         from nafas import voice
         for k, (lang, text) in lines.items():
             clips[k] = base64.b64encode(voice.synthesize(text, lang)).decode()
+    elif args.elevenlabs:
+        import urllib.request
+        vid, k = os.environ.get("ELEVENLABS_VOICE_ID", "JBFqnCBsd6RMkjVDRZzb"), os.environ["ELEVENLABS_API_KEY"]
+        for kk, (lang, text) in lines.items():
+            req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{vid}?output_format=mp3_22050_32",
+                                         json.dumps({"text": text, "model_id": "eleven_multilingual_v2", "language_code": lang}).encode(),
+                                         {"xi-api-key": k, "Content-Type": "application/json"})
+            clips[kk] = base64.b64encode(urllib.request.urlopen(req, timeout=60).read()).decode()
     elif args.espeak:
         es = Espeak()
         for k, (lang, text) in lines.items():

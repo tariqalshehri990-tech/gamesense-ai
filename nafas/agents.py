@@ -400,7 +400,11 @@ def build_facts(seed: int) -> MatchFacts:
     history = simulate_season(seed, HISTORY_MATCHES)
     book = Book.from_history(players, history)
     calibrate_goal_value(book)
-    match = simulate_match(seed, HISTORY_MATCHES, players)
+    return facts_for_match(seed, players, book, simulate_match(seed, HISTORY_MATCHES, players))
+
+
+def facts_for_match(seed: int, players, book, match) -> MatchFacts:
+    """Wire a match (simulated, or derived from video tracking) into the facts layer and live ledger."""
     facts = MatchFacts(seed=seed, match=match, players=players, book=book)
     book.set_live_fraction(0.0)
     facts.baseline_rows = {pid: book.row(pid) for pid in players}
