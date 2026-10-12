@@ -37,6 +37,9 @@ window.__DEMO=%s;
 })();
 </script>""" % json.dumps({"streams": streams, "whatif": wi}, ensure_ascii=False)
 html = (ROOT / "nafas/static/index.html").read_text()
+audio = ROOT / "demo/audio.json"
+if audio.exists():  # pre-rendered clips (scripts/build_audio.py) so the demo speaks on any device
+    shim += "\n<script>window.__AUDIO=" + audio.read_text() + ";</script>"
 (ROOT / "demo").mkdir(exist_ok=True)
 (ROOT / "demo/index.html").write_text(html.replace("<script>", shim + "\n<script>", 1))
 print("demo built:", len(streams), "streams,", len(wi), "what-ifs")

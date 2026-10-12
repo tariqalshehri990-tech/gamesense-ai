@@ -36,6 +36,8 @@ Works fully offline (template backend). To enable Foundry phrasing: `pip install
 ### Voice
 The 🔊 button speaks each line. With `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` set, the server's `POST /api/tts` returns Azure AI Speech audio (`ar-SA-HamedNeural`, `en-GB-RyanNeural`). Without them, the browser's own speech voice is used. A cut-off line is cut in the audio too: a new line stops the previous one. The Azure path is **untested against the live service** (no key was available while building); the browser path works where the device has an Arabic voice. Best at 6× or 1× speed.
 
+The standalone `demo/index.html` carries pre-rendered clips so it speaks on any device (some browsers expose no speech voices at all). Default clips come from offline **espeak-ng** (robotic, no Saudi dialect; build with `python scripts/build_audio.py`). For neural quality, run `AZURE_SPEECH_KEY=... AZURE_SPEECH_REGION=... python scripts/build_audio.py --azure` and then `python scripts/build_demo.py`.
+
 ## Validation
 - Simulator calibrated to Premier League averages (~25 shots/match, ~0.115 xG/shot, ~11% conversion).
 - Skill recovery: simulated players have hidden true skill; 90% intervals covered it ~88–90% of the time; test checks positive-skill players rank above negative.

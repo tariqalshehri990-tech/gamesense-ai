@@ -195,7 +195,7 @@ const T = {
   ar: {
     tagline:"تعليق يصرف انتباه المشاهد كأنه ميزانية، ودفتر مستثمر يفصل المهارة عن الحظ. بيانات تجريبية بالكامل.",
     tabs:{casual:"مشجع عادي",analyst:"محلل",blind:"وصف صوتي",investor:"مستثمر"},
-    voiceOn:"🔊 الصوت شغّال", voiceOff:"🔈 شغّل الصوت", voiceHint:"الصوت يشتغل زين على 6× أو 1×.", noVoice:"جهازك ما فيه صوت عربي. الأنغام شغّالة، ثبّت صوت عربي من إعدادات النظام.", voiceTest:"الصوت شغّال", speed:"السرعة", seed:"المباراة", restart:"إعادة", newMatch:"مباراة جديدة",
+    voiceOn:"🔊 الصوت شغّال", voiceOff:"🔈 شغّل الصوت", voiceHint:"الصوت يشتغل زين على 6× أو 1×.", noVoice:"جهازك ما فيه صوت عربي. الأنغام شغّالة، ثبّت صوت عربي من إعدادات النظام.", voiceTest:"الصوت شغّال", clipVoice:"صوت مسجّل (آلي)", speed:"السرعة", seed:"المباراة", restart:"إعادة", newMatch:"مباراة جديدة",
     speech:"كلام", silence:"صمت", cut:"جمل قُطعت", catch:"اختصارات", drop:"لحظات أُسقطت",
     silentNow:"صمت. ما فيه شي يستاهل الكلام الحين.", cutNote:"قُطعت لأن لحظة أهم وصلت.", catchNote:"قيلت متأخرة فاختُصرت.",
     ledgerH:"دفتر القيمة", ledgerSub:"كل لاعب وعقده (وهمي). الدائرة هي الرقم الظاهر، والشريط هو التقدير المبني على الأدلة. خط التعادل عند 1.",
@@ -210,7 +210,7 @@ const T = {
   en: {
     tagline:"Commentary that spends each viewer's attention like a budget, and an investor ledger that separates skill from luck. All data is synthetic.",
     tabs:{casual:"Casual fan",analyst:"Analyst",blind:"Audio description",investor:"Investor"},
-    voiceOn:"🔊 Voice on", voiceOff:"🔈 Voice off", voiceHint:"Voice works best at 6× or 1×.", noVoice:"No Arabic voice on this device. Cues still play.", voiceTest:"Voice is on", speed:"Speed", seed:"Match", restart:"Restart", newMatch:"New match",
+    voiceOn:"🔊 Voice on", voiceOff:"🔈 Voice off", voiceHint:"Voice works best at 6× or 1×.", noVoice:"No Arabic voice on this device. Cues still play.", voiceTest:"Voice is on", clipVoice:"recorded clip (synthetic)", speed:"Speed", seed:"Match", restart:"Restart", newMatch:"New match",
     speech:"Speech", silence:"Silence", cut:"Cut off", catch:"Catch-ups", drop:"Dropped",
     silentNow:"Silence. Nothing worth saying right now.", cutNote:"Cut off because a bigger moment arrived.", catchNote:"Said late, so it was shortened.",
     ledgerH:"Value ledger", ledgerSub:"Each player and their (fictional) contract. The circle is the headline number, the bar is the evidence-based estimate. Break-even is 1.",
@@ -239,8 +239,11 @@ function cue(kind){
       const t=c.currentTime+t0; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(kind==="goal"?0.22:0.12,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+d); o.start(t); o.stop(t+d+0.02); }
   }catch(e){}
 }
+function fnv(t){ let h=0x811c9dc5; for(let i=0;i<t.length;i++){ h^=t.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; } return h.toString(16).padStart(8,"0"); }
 async function voiceSay(text,lang){
   voiceStop();
+  const clip=window.__AUDIO&&window.__AUDIO[lang+":"+fnv(text)];
+  if(clip){ try{ const a=new Audio("data:audio/mpeg;base64,"+clip); VOICE.audio=a; await a.play(); voiceMsg(tt("clipVoice")); return; }catch(e){ voiceMsg(String(e&&e.name||e)); } }
   if(VOICE.azure){
     try{
       const r=await fetch("/api/tts",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({text,lang})});
