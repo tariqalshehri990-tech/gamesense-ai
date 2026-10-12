@@ -31,12 +31,15 @@ pip install -r requirements-dev.txt && pytest
 Works fully offline (template backend). To enable Foundry phrasing: `pip install agent-framework-foundry azure-identity`, set `FOUNDRY_PROJECT_ENDPOINT` and `FOUNDRY_MODEL`. **That path is untested.**
 
 ## Azure
-`Dockerfile` included. Deploy: `az containerapp up --name nafas --source . --ingress external --target-port 8000`. Microsoft pieces: Agent Framework + Foundry (optional backend), MCP, Container Apps, Azure AI Speech (planned voice output, not wired).
+`Dockerfile` included. Deploy: `az containerapp up --name nafas --source . --ingress external --target-port 8000`. Microsoft pieces: Agent Framework + Foundry (optional backend), MCP, Container Apps, Azure AI Speech (voice).
+
+### Voice
+The 🔊 button speaks each line. With `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION` set, the server's `POST /api/tts` returns Azure AI Speech audio (`ar-SA-HamedNeural`, `en-GB-RyanNeural`). Without them, the browser's own speech voice is used. A cut-off line is cut in the audio too: a new line stops the previous one. The Azure path is **untested against the live service** (no key was available while building); the browser path works where the device has an Arabic voice. Best at 6× or 1× speed.
 
 ## Validation
 - Simulator calibrated to Premier League averages (~25 shots/match, ~0.115 xG/shot, ~11% conversion).
 - Skill recovery: simulated players have hidden true skill; 90% intervals covered it ~88–90% of the time; test checks positive-skill players rank above negative.
-- 11 automated tests (`pytest`).
+- 12 automated tests (`pytest`).
 
 ## What we refuse to claim
 - No price prediction, no buy/sell advice (the Auditor blocks such wording).

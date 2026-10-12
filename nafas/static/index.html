@@ -57,6 +57,7 @@ button,select,input{font:inherit;color:inherit}
 .seg button{border-radius:0}
 .seg button:first-child{border-start-start-radius:5px;border-end-start-radius:5px}
 .seg button:last-child{border-start-end-radius:5px;border-end-end-radius:5px}
+.tools .btn[aria-pressed="true"]{background:var(--gold);color:var(--turf-deep);border-color:var(--gold)}
 .seg button[aria-pressed="true"]{background:var(--chalk);color:var(--turf-deep);border-color:var(--chalk)}
 .tagline{margin:8px 0 0;color:var(--chalk-2);font-size:.9rem;max-width:62ch}
 
@@ -143,8 +144,9 @@ details.trace b{color:var(--ink);font-weight:600}
     <div class="tabs" role="tablist" id="tabs"></div>
     <div class="tools">
       <div class="seg" id="langSeg"><button data-l="ar" aria-pressed="true">عربي</button><button data-l="en" aria-pressed="false">English</button></div>
-      <label><span id="lblSpeed"></span> <select id="speed"><option value="30">30×</option><option value="60" selected>60×</option><option value="150">150×</option><option value="600">600×</option></select></label>
+      <label><span id="lblSpeed"></span> <select id="speed"><option value="1">1×</option><option value="6">6×</option><option value="30">30×</option><option value="60" selected>60×</option><option value="150">150×</option><option value="600">600×</option></select></label>
       <label><span id="lblSeed"></span> <input id="seed" type="number" min="0" max="10000" value="35"></label>
+      <button class="btn" id="voiceBtn" aria-pressed="false"></button>
       <button class="btn" id="restart"></button>
       <button class="btn" id="newMatch"></button>
     </div>
@@ -193,7 +195,7 @@ const T = {
   ar: {
     tagline:"تعليق يصرف انتباه المشاهد كأنه ميزانية، ودفتر مستثمر يفصل المهارة عن الحظ. بيانات تجريبية بالكامل.",
     tabs:{casual:"مشجع عادي",analyst:"محلل",blind:"وصف صوتي",investor:"مستثمر"},
-    speed:"السرعة", seed:"المباراة", restart:"إعادة", newMatch:"مباراة جديدة",
+    voiceOn:"🔊 الصوت شغّال", voiceOff:"🔈 شغّل الصوت", voiceHint:"الصوت يشتغل زين على 6× أو 1×.", speed:"السرعة", seed:"المباراة", restart:"إعادة", newMatch:"مباراة جديدة",
     speech:"كلام", silence:"صمت", cut:"جمل قُطعت", catch:"اختصارات", drop:"لحظات أُسقطت",
     silentNow:"صمت. ما فيه شي يستاهل الكلام الحين.", cutNote:"قُطعت لأن لحظة أهم وصلت.", catchNote:"قيلت متأخرة فاختُصرت.",
     ledgerH:"دفتر القيمة", ledgerSub:"كل لاعب وعقده (وهمي). الدائرة هي الرقم الظاهر، والشريط هو التقدير المبني على الأدلة. خط التعادل عند 1.",
@@ -208,7 +210,7 @@ const T = {
   en: {
     tagline:"Commentary that spends each viewer's attention like a budget, and an investor ledger that separates skill from luck. All data is synthetic.",
     tabs:{casual:"Casual fan",analyst:"Analyst",blind:"Audio description",investor:"Investor"},
-    speed:"Speed", seed:"Match", restart:"Restart", newMatch:"New match",
+    voiceOn:"🔊 Voice on", voiceOff:"🔈 Voice off", voiceHint:"Voice works best at 6× or 1×.", speed:"Speed", seed:"Match", restart:"Restart", newMatch:"New match",
     speech:"Speech", silence:"Silence", cut:"Cut off", catch:"Catch-ups", drop:"Dropped",
     silentNow:"Silence. Nothing worth saying right now.", cutNote:"Cut off because a bigger moment arrived.", catchNote:"Said late, so it was shortened.",
     ledgerH:"Value ledger", ledgerSub:"Each player and their (fictional) contract. The circle is the headline number, the bar is the evidence-based estimate. Break-even is 1.",
@@ -221,8 +223,25 @@ const T = {
     title:"Attention over the match", feedH:"Match tape", feedSub:"Every line that was spoken, and when. Cut-off and dropped lines show on the breath line above.", roles:{FWD:"Forwards",MID:"Midfield",DEF:"Defenders",GK:"Goalkeepers"}, axisLo:"below break-even", axisHi:"above break-even", axisBE:"break-even 1.0", legendObs:"Headline number", legendEv:"Evidence range", legendLuck:"Luck share"
   }
 };
+const VOICE={on:false,azure:false,audio:null};
+fetch("/api/health").then(r=>r.json()).then(j=>{VOICE.azure=!!j.azure_tts;}).catch(()=>{});
+function voiceStop(){ try{ speechSynthesis.cancel(); }catch(e){} if(VOICE.audio){ VOICE.audio.pause(); VOICE.audio=null; } }
+async function voiceSay(text,lang){
+  voiceStop();
+  if(VOICE.azure){
+    try{
+      const r=await fetch("/api/tts",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({text,lang})});
+      if(r.ok){ const a=new Audio(URL.createObjectURL(await r.blob())); VOICE.audio=a; await a.play(); return; }
+    }catch(e){}
+  }
+  try{
+    const u=new SpeechSynthesisUtterance(text); u.lang=lang==="ar"?"ar-SA":"en-GB"; u.rate=1.05;
+    const vs=speechSynthesis.getVoices(); const v=vs.find(x=>x.lang.replace("_","-").toLowerCase().startsWith(u.lang.toLowerCase()))||vs.find(x=>x.lang.toLowerCase().startsWith(lang));
+    if(v) u.voice=v; speechSynthesis.speak(u);
+  }catch(e){}
+}
 const $ = s => document.querySelector(s);
-const S = { profile:"casual", lang:"ar", es:null, meta:null, players:{}, rows:{}, score:{KBY:0,RMR:0}, speechSec:0, cuts:0, catches:0, drops:0, now:0, seed:35, goalsByShot:{} };
+const S = { voice:false, profile:"casual", lang:"ar", es:null, meta:null, players:{}, rows:{}, score:{KBY:0,RMR:0}, speechSec:0, cuts:0, catches:0, drops:0, now:0, seed:35, goalsByShot:{} };
 const W=1000, H=130, BASE=66, DUR=5400;
 const ROLE_ORDER = {FWD:0, MID:1, GK:2, DEF:3};
 const tt = k => T[S.lang][k];
@@ -235,7 +254,7 @@ function el(tag, attrs={}, parent){ const e=document.createElementNS(svgNS,tag);
 function applyLang(){
   document.documentElement.lang = S.lang; document.documentElement.dir = S.lang==="ar" ? "rtl" : "ltr";
   $("#tagline").textContent=tt("tagline"); $("#lblSpeed").textContent=tt("speed"); $("#lblSeed").textContent=tt("seed");
-  $("#restart").textContent=tt("restart"); $("#newMatch").textContent=tt("newMatch");
+  $("#restart").textContent=tt("restart"); $("#voiceBtn").textContent=S.voice?tt("voiceOn"):tt("voiceOff"); $("#voiceBtn").title=tt("voiceHint"); $("#newMatch").textContent=tt("newMatch");
   $("#lSpeech").textContent=tt("speech"); $("#lSilence").textContent=tt("silence"); $("#lCut").textContent=tt("cut"); $("#lCatch").textContent=tt("catch"); $("#lDrop").textContent=tt("drop");
   $("#hFeed").textContent=tt("feedH"); $("#sFeed").textContent=tt("feedSub"); $("#axis").innerHTML=`<span style="left:3.3%">${tt("axisLo")}</span><span style="left:46.8%;transform:translateX(-50%);color:var(--ink);font-weight:600">${tt("axisBE")}</span><span style="right:3.3%">${tt("axisHi")}</span>`; $("#hLedger").textContent=tt("ledgerH"); $("#sLedger").textContent=tt("ledgerSub"); $("#traceSum").textContent=tt("trace"); $("#foot").textContent=tt("foot");
   $("#breathTitle").textContent=tt("title");
@@ -274,6 +293,7 @@ function addUtterance(u){
   el("rect",{x,y:BASE-h/2,width:w,height:h,rx:1.2,fill: u.kind==="ledger"?"var(--mint)":"var(--chalk)",opacity: u.cut_off?.6:.95},svg);
   if(u.cut_off){ const xx=x+w; el("path",{d:`M${xx} ${BASE-h/2-6} l-4 6 l8 0 z`,fill:"var(--flare)"},svg); }
   renderNow(u);
+  if(S.voice) voiceSay(u.text,u.lang||S.lang);
   clearTimeout(S._silenceTimer); S._silenceTimer=setTimeout(()=>renderNow(null), Math.max(1200,(u.end-u.start)/Number($("#speed").value)*1000+900));
   const li=document.createElement("li"); li.className=(u.kind==="goal"?"goal ":"")+"new";
   li.innerHTML=`<span class="t">${mm(u.start)}'</span><span class="txt"></span>`;
@@ -358,6 +378,7 @@ async function whatIf(u,li,btn){
 
 /* ---- stream ---- */
 function start(){
+  voiceStop();
   if(S.es){ S.es.close(); }
   S.seed=Number($("#seed").value)||35; resetView();
   const url=`/api/stream?seed=${S.seed}&profile=${S.profile}&lang=${S.lang}&speed=${$("#speed").value}`;
@@ -379,6 +400,7 @@ function start(){
   };
   es.onerror=()=>{ es.close(); };
 }
+$("#voiceBtn").onclick=()=>{ S.voice=!S.voice; $("#voiceBtn").setAttribute("aria-pressed",S.voice); $("#voiceBtn").textContent=S.voice?tt("voiceOn"):tt("voiceOff"); if(!S.voice) voiceStop(); else { try{speechSynthesis.getVoices();}catch(e){} } };
 $("#restart").onclick=start; $("#speed").onchange=start; $("#seed").onchange=start;
 $("#newMatch").onclick=()=>{ $("#seed").value=Math.floor(Math.random()*9000)+1; start(); };
 document.querySelectorAll("#langSeg button").forEach(b=>b.onclick=()=>{ S.lang=b.dataset.l; applyLang(); start(); });

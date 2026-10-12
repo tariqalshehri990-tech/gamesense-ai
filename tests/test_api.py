@@ -29,3 +29,13 @@ def test_mcp_tools():
     srv = create_server()
     names = {t.name for t in asyncio.run(srv.list_tools())}
     assert {"get_match_state", "get_shot", "get_player_value", "get_evidence", "list_moments", "whatif"} <= names
+
+
+def test_tts_not_configured_returns_501_and_ssml_is_escaped(monkeypatch):
+    from nafas import voice
+    monkeypatch.delenv("AZURE_SPEECH_KEY", raising=False)
+    assert c.post("/api/tts", json={"text": "هدف!", "lang": "ar"}).status_code == 501
+    assert c.post("/api/tts", json={"text": " ", "lang": "ar"}).status_code == 400
+    assert "&lt;b&gt;" in voice.build_ssml("<b>", "en")
+    assert "ar-SA-HamedNeural" in voice.build_ssml("x", "ar")
+    assert c.get("/api/health").json()["azure_tts"] is False

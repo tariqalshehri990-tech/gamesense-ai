@@ -17,12 +17,13 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from .agents import build_facts, build_session, make_backend
 from .attention import PROFILES
+from . import voice
 from .facts import MatchFacts
 
 DEFAULT_SEED = int(os.environ.get("NAFAS_SEED", "35"))
@@ -93,7 +94,7 @@ async def index() -> FileResponse:
 
 @app.get("/api/health")
 async def health() -> dict[str, Any]:
-    return {"ok": True, "backend": _backend.name, "default_seed": DEFAULT_SEED}
+    return {"ok": True, "backend": _backend.name, "default_seed": DEFAULT_SEED, "azure_tts": voice.enabled()}
 
 
 @app.get("/api/session")
@@ -146,3 +147,22 @@ async def whatif(body: WhatIf) -> dict[str, Any]:
     if "error" in res:
         raise HTTPException(400, res["error"])
     return res
+
+
+class Speak(BaseModel):
+    text: str
+    lang: str = "ar"
+
+
+@app.post("/api/tts")
+async def tts(body: Speak) -> Response:
+    """Azure AI Speech audio for one commentary line (501 when no Speech key is configured)."""
+    if body.lang not in voice.VOICES or not body.text.strip():
+        raise HTTPException(400, "lang must be ar or en and text must not be empty")
+    if not voice.enabled():
+        raise HTTPException(501, "Azure AI Speech is not configured (AZURE_SPEECH_KEY / AZURE_SPEECH_REGION)")
+    try:
+        audio = await asyncio.to_thread(voice.synthesize, body.text, body.lang)
+    except Exception as exc:  # network or service error: the UI falls back to the browser voice
+        raise HTTPException(502, f"speech service error: {type(exc).__name__}")
+    return Response(audio, media_type="audio/mpeg")
