@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نَفَس — Nafas</title>
+<meta name="description" content="Match commentary that spends each viewer's attention like a budget, plus an investor ledger that separates skill from luck. Synthetic data only.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230C2B35'/%3E%3Cpath d='M4 16h5l2-7 3 14 3-10 2 3h9' fill='none' stroke='%23F3F5F7' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --salt:#F3F5F7; --paper:#FFFFFF; --ink:#0C2B35; --ink-2:#4A6570; --line:#CBD6DB;
+  --skill:#0E7C7B; --luck:#D9922B; --alert:#9C2F57;
+  --gutter:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --salt:#0B1A20; --paper:#10252D; --ink:#E8EFF1; --ink-2:#97ADB5; --line:#27424C; --skill:#3DB8B6; --luck:#E8A94A; --alert:#E0709A; }
+}
+:root[data-theme="dark"]{ --salt:#0B1A20; --paper:#10252D; --ink:#E8EFF1; --ink-2:#97ADB5; --line:#27424C; --skill:#3DB8B6; --luck:#E8A94A; --alert:#E0709A; }
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--salt);color:var(--ink);font-family:"Readex Pro","IBM Plex Sans Arabic",Tahoma,system-ui,sans-serif;font-weight:300;line-height:1.7;font-feature-settings:"tnum" 1}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--skill);outline-offset:3px;border-radius:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 var(--gutter)}
+header{padding:22px 0 10px;display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:14px}
+.brand h1{margin:0;font-size:clamp(2.6rem,7vw,4.4rem);font-weight:200;letter-spacing:0;line-height:1}
+.brand span{color:var(--ink-2);font-size:.95rem;font-weight:300;max-width:34ch}
+.scoreboard{display:flex;align-items:baseline;gap:18px;font-size:1.05rem}
+.scoreboard b{font-weight:500;font-size:1.9rem}
+.scoreboard .min{color:var(--ink-2)}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:8px 0 14px;border-bottom:1px solid var(--line)}
+.tabs{display:flex;flex-wrap:wrap;gap:4px}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:6px 12px;cursor:pointer;color:var(--ink-2);font-weight:400}
+.tabs button[aria-selected="true"]{color:var(--ink);border-color:var(--ink);font-weight:500}
+.seg{display:flex;gap:2px}
+.seg button,.btn{background:none;border:1px solid var(--line);padding:4px 12px;cursor:pointer;border-radius:3px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--salt);border-color:var(--ink)}
+.btn:hover,.seg button:hover{border-color:var(--ink)}
+select{background:var(--paper);border:1px solid var(--line);padding:4px 8px;border-radius:3px}
+input[type=number]{width:5.5em;background:var(--paper);border:1px solid var(--line);padding:4px 8px;border-radius:3px}
+/* breath line: the memorable thing */
+.breath{padding:20px 0 6px}
+.breath svg{display:block;width:100%;height:auto;overflow:visible}
+.breath-meta{display:flex;flex-wrap:wrap;gap:6px 26px;color:var(--ink-2);font-size:.9rem;padding-top:4px}
+.breath-meta b{color:var(--ink);font-weight:500}
+main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:36px 56px;padding:20px 0 40px}
+@media (max-width:860px){ main{grid-template-columns:1fr} }
+.now{min-height:7.5rem;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:6px}
+.now p{margin:0;font-size:clamp(1.4rem,3.4vw,2.1rem);font-weight:300;line-height:1.55;max-width:34ch}
+.now p.silent{color:var(--ink-2);font-size:1.15rem}
+.now small{display:block;color:var(--ink-2);margin-top:8px;font-size:.88rem}
+ol.feed{list-style:none;margin:0;padding:0}
+ol.feed li{display:grid;grid-template-columns:3.2rem 1fr;gap:4px 14px;padding:12px 0;border-bottom:1px solid var(--line)}
+ol.feed .t{color:var(--ink-2);font-size:.9rem;padding-top:2px}
+ol.feed .txt{font-size:1.02rem}
+ol.feed .note{grid-column:2;color:var(--ink-2);font-size:.85rem}
+ol.feed li.goal .txt{font-weight:500}
+ol.feed li.goal .t{color:var(--alert);font-weight:500}
+.mini{background:none;border:0;padding:0;color:var(--skill);cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-size:.88rem}
+h2{font-size:1.15rem;font-weight:500;margin:0 0 4px}
+.sub{color:var(--ink-2);font-size:.9rem;margin:0 0 14px;max-width:46ch}
+.ledger{list-style:none;margin:0;padding:0}
+.ledger li{padding:12px 0;border-bottom:1px solid var(--line);display:grid;gap:4px 14px;grid-template-columns:minmax(0,9.5rem) 1fr}
+.ledger .who{font-weight:400}
+.ledger .who small{display:block;color:var(--ink-2);font-size:.82rem}
+.ledger .read{font-size:.86rem;color:var(--ink-2);grid-column:1/-1}
+.ledger li.flash{animation:flash 1.6s ease-out}
+@keyframes flash{from{background:color-mix(in srgb,var(--luck) 22%,transparent)}to{background:transparent}}
+.legend{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.85rem;color:var(--ink-2);margin:6px 0 10px}
+.sw{display:inline-block;width:.8em;height:.8em;vertical-align:-.05em;margin-inline-end:.4em}
+details.trace{border-top:1px solid var(--line);padding:12px 0 40px}
+details.trace summary{cursor:pointer;color:var(--ink-2)}
+details.trace ol{margin:10px 0 0;padding:0;list-style:none;font-size:.88rem;color:var(--ink-2);max-height:16rem;overflow:auto}
+details.trace li{padding:2px 0}
+details.trace b{color:var(--ink);font-weight:500}
+.foot{color:var(--ink-2);font-size:.82rem;padding:0 0 32px;max-width:80ch}
+.whatif{margin-top:6px;padding:8px 10px;border-inline-start:3px solid var(--luck);font-size:.88rem;grid-column:2}
+@media (prefers-reduced-motion:reduce){ .ledger li.flash{animation:none} }
+.sr{position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand"><h1>نَفَس</h1><span id="tagline"></span></div>
+  <div class="scoreboard" aria-live="off"><span id="tA"></span><b id="sA">0</b><b>–</b><b id="sB">0</b><span id="tB"></span><span class="min" id="clock">0'</span></div>
+</header>
+<div class="controls">
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div class="seg" id="langSeg"><button data-l="ar" aria-pressed="true">عربي</button><button data-l="en" aria-pressed="false">English</button></div>
+  <label><span id="lblSpeed"></span> <select id="speed"><option value="30">30×</option><option value="60" selected>60×</option><option value="150">150×</option><option value="600">600×</option></select></label>
+  <label><span id="lblSeed"></span> <input id="seed" type="number" min="0" max="10000" value="35"></label>
+  <button class="btn" id="restart"></button>
+  <button class="btn" id="newMatch"></button>
+</div>
+
+<section class="breath" aria-label="breath">
+  <svg id="breath" viewBox="0 0 1000 150" role="img" aria-labelledby="breathTitle"><title id="breathTitle"></title></svg>
+  <div class="breath-meta">
+    <span><span id="lSpeech"></span> <b id="mSpeech">0</b></span>
+    <span><span id="lSilence"></span> <b id="mSilence">100%</b></span>
+    <span><span id="lCut"></span> <b id="mCut">0</b></span>
+    <span><span id="lCatch"></span> <b id="mCatch">0</b></span>
+    <span><span id="lDrop"></span> <b id="mDrop">0</b></span>
+  </div>
+</section>
+
+<main>
+  <section aria-label="commentary">
+    <div class="now" id="now" aria-live="polite"></div>
+    <ol class="feed" id="feed"></ol>
+  </section>
+  <section aria-label="ledger">
+    <h2 id="hLedger"></h2>
+    <p class="sub" id="sLedger"></p>
+    <div class="legend" id="legend"></div>
+    <ul class="ledger" id="ledger"></ul>
+  </section>
+</main>
+
+<details class="trace"><summary id="traceSum"></summary><ol id="trace"></ol></details>
+<p class="foot" id="foot"></p>
+</div>
+
+<script>
+const T = {
+  ar: {
+    tagline:"تعليق يصرف انتباه المشاهد كأنه ميزانية، ودفتر مستثمر يفصل المهارة عن الحظ. بيانات تجريبية بالكامل.",
+    tabs:{casual:"مشجع عادي",analyst:"محلل",blind:"وصف صوتي",investor:"مستثمر"},
+    speed:"السرعة", seed:"المباراة", restart:"إعادة", newMatch:"مباراة جديدة",
+    speech:"كلام", silence:"صمت", cut:"جمل قُطعت", catch:"اختصارات", drop:"لحظات أُسقطت",
+    silentNow:"صمت. ما فيه شي يستاهل الكلام الحين.", cutNote:"قُطعت لأن لحظة أهم وصلت.", catchNote:"قيلت متأخرة فاختُصرت.",
+    ledgerH:"دفتر القيمة", ledgerSub:"كل لاعب وعقده (وهمي). الدائرة هي الرقم الظاهر، والشريط هو التقدير المبني على الأدلة. خط التعادل عند 1.",
+    obs:"الرقم الظاهر", ev:"تقدير الأدلة", luck:"نصيب الحظ", noev:"الأدلة غير كافية", inconc:"لا حكم، النطاق يشمل التعادل",
+    above:"فوق التعادل (اتجاه فقط)", below:"تحت التعادل (اتجاه فقط)", aboveD:"فوق التعادل", belowD:"تحت التعادل",
+    wage:"ألف/أسبوع", shots:"تسديدات", faced:"تسديدات مواجهة", whatif:"ماذا لو؟",
+    wiGoalOff:"لو ما دخل الهدف", wiSaveOff:"لو ما انصدّت", wiHead:"الرقم الظاهر", wiEv:"تقدير الأدلة", wiTag:"سيناريو محاكاة، مو اللي كان بيصير.",
+    trace:"سجل الوكلاء (من سلّم لمن)", end:"انتهت المباراة",
+    foot:"كل اللاعبين والأندية والعقود مولّدة بالكامل. لا توصيات شراء أو بيع. الرقم عبارة عن نطاق، وتحت 100 تسديدة نقول ما عندنا أدلة كافية. صوت Azure AI Speech المتاح للسعودية يقرأ بالفصحى، فالنص بلهجة سعودية والصوت سعودي-فصيح.",
+    title:"حركة الانتباه", legendObs:"الرقم الظاهر", legendEv:"نطاق الأدلة", legendLuck:"نصيب الحظ"
+  },
+  en: {
+    tagline:"Commentary that spends each viewer's attention like a budget, and an investor ledger that separates skill from luck. All data is synthetic.",
+    tabs:{casual:"Casual fan",analyst:"Analyst",blind:"Audio description",investor:"Investor"},
+    speed:"Speed", seed:"Match", restart:"Restart", newMatch:"New match",
+    speech:"Speech", silence:"Silence", cut:"Cut off", catch:"Catch-ups", drop:"Dropped",
+    silentNow:"Silence. Nothing worth saying right now.", cutNote:"Cut off because a bigger moment arrived.", catchNote:"Said late, so it was shortened.",
+    ledgerH:"Value ledger", ledgerSub:"Each player and their (fictional) contract. The circle is the headline number, the bar is the evidence-based estimate. Break-even is 1.",
+    obs:"Headline", ev:"Evidence", luck:"Luck share", noev:"Not enough evidence", inconc:"No verdict, range includes break-even",
+    above:"Above break-even (directional)", below:"Below break-even (directional)", aboveD:"Above break-even", belowD:"Below break-even",
+    wage:"k/week", shots:"shots", faced:"shots faced", whatif:"What if?",
+    wiGoalOff:"If the goal had not gone in", wiSaveOff:"If the save had not been made", wiHead:"Headline", wiEv:"Evidence", wiTag:"A simulation scenario, not what would have happened.",
+    trace:"Agent log (who handed what to whom)", end:"Full time",
+    foot:"Every player, club and contract is generated. No buy or sell advice. Numbers are ranges, and below 100 shots we say there is not enough evidence. The Saudi-locale Azure AI Speech voices read Modern Standard Arabic, so text is Saudi-flavoured and audio is Saudi-locale.",
+    title:"Attention over the match", legendObs:"Headline number", legendEv:"Evidence range", legendLuck:"Luck share"
+  }
+};
+const $ = s => document.querySelector(s);
+const S = { profile:"casual", lang:"ar", es:null, meta:null, players:{}, rows:{}, score:{KBY:0,RMR:0}, speechSec:0, cuts:0, catches:0, drops:0, now:0, seed:35, goalsByShot:{} };
+const W=1000, H=150, BASE=76, DUR=5400;
+const ROLE_ORDER = {FWD:0, MID:1, GK:2, DEF:3};
+const tt = k => T[S.lang][k];
+const mm = t => Math.min(90, Math.floor(t/60)+1);
+const fmt = (x,d=2) => (x>=0?"+":"")+x.toFixed(d);
+const pName = p => S.lang==="ar" ? p.name_ar : p.name;
+const svgNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs={}, parent){ const e=document.createElementNS(svgNS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+
+function applyLang(){
+  document.documentElement.lang = S.lang; document.documentElement.dir = S.lang==="ar" ? "rtl" : "ltr";
+  $("#tagline").textContent=tt("tagline"); $("#lblSpeed").textContent=tt("speed"); $("#lblSeed").textContent=tt("seed");
+  $("#restart").textContent=tt("restart"); $("#newMatch").textContent=tt("newMatch");
+  $("#lSpeech").textContent=tt("speech"); $("#lSilence").textContent=tt("silence"); $("#lCut").textContent=tt("cut"); $("#lCatch").textContent=tt("catch"); $("#lDrop").textContent=tt("drop");
+  $("#hLedger").textContent=tt("ledgerH"); $("#sLedger").textContent=tt("ledgerSub"); $("#traceSum").textContent=tt("trace"); $("#foot").textContent=tt("foot");
+  $("#breathTitle").textContent=tt("title");
+  $("#legend").innerHTML = `<span><svg width="12" height="12" class="sw"><circle cx="6" cy="6" r="4.5" fill="none" stroke="var(--ink)" stroke-width="1.5"/></svg>${tt("legendObs")}</span><span><span class="sw" style="background:var(--skill)"></span>${tt("legendEv")}</span><span><span class="sw" style="background:var(--luck)"></span>${tt("legendLuck")}</span>`;
+  const tabs=$("#tabs"); tabs.innerHTML="";
+  for(const k of ["casual","analyst","blind","investor"]){ const b=document.createElement("button"); b.setAttribute("role","tab"); b.setAttribute("aria-selected", k===S.profile); b.textContent=tt("tabs")[k]; b.onclick=()=>{S.profile=k; applyLang(); start();}; tabs.appendChild(b); }
+  document.querySelectorAll("#langSeg button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.l===S.lang));
+}
+
+function resetView(){
+  S.score={KBY:0,RMR:0}; S.speechSec=0; S.cuts=S.catches=S.drops=0; S.now=0; S.goalsByShot={};
+  $("#feed").innerHTML=""; $("#trace").innerHTML=""; $("#ledger").innerHTML=""; renderNow(null);
+  const svg=$("#breath"); [...svg.querySelectorAll("*:not(title)")].forEach(n=>n.remove());
+  el("line",{x1:0,x2:W,y1:BASE,y2:BASE,stroke:"var(--line)","stroke-width":1.5},svg);
+  for(const m of [15,30,45,60,75]){ const x=m*60/DUR*W; el("line",{x1:x,x2:x,y1:BASE-5,y2:BASE+5,stroke:"var(--line)"},svg); const tx=el("text",{x,y:H-6,"text-anchor":"middle","font-size":12,fill:"var(--ink-2)"},svg); tx.textContent=m+"'"; }
+  el("line",{id:"cursor",x1:0,x2:0,y1:8,y2:H-22,stroke:"var(--ink)","stroke-width":1,opacity:.5},svg);
+  updateMeta(); updateScore();
+}
+function updateScore(){ $("#sA").textContent=S.score.KBY; $("#sB").textContent=S.score.RMR; $("#clock").textContent=mm(S.now)+"'"; const c=$("#cursor"); if(c){const x=S.now/DUR*W; c.setAttribute("x1",x); c.setAttribute("x2",x);} }
+function updateMeta(){
+  $("#mSpeech").textContent=Math.round(S.speechSec)+"s";
+  const sil = S.now>0 ? Math.max(0,1-S.speechSec/S.now) : 1; $("#mSilence").textContent=Math.round(sil*100)+"%";
+  $("#mCut").textContent=S.cuts; $("#mCatch").textContent=S.catches; $("#mDrop").textContent=S.drops;
+}
+function renderNow(u){
+  const n=$("#now"); n.innerHTML="";
+  const p=document.createElement("p");
+  if(!u){ p.className="silent"; p.textContent=tt("silentNow"); n.appendChild(p); return; }
+  p.textContent=u.text; n.appendChild(p);
+  if(u.cut_off||u.catch_up){ const s=document.createElement("small"); s.textContent=u.cut_off?tt("cutNote"):tt("catchNote"); n.appendChild(s); }
+}
+
+function addUtterance(u){
+  S.speechSec += Math.max(0,u.end-u.start); if(u.cut_off) S.cuts++; if(u.catch_up) S.catches++;
+  const svg=$("#breath"); const x=u.start/DUR*W, w=Math.max(2.5,(u.end-u.start)/DUR*W), h=14+u.importance*58;
+  el("rect",{x,y:BASE-h/2,width:w,height:h,rx:1.2,fill: u.kind==="ledger"?"var(--skill)":"var(--ink)",opacity: u.cut_off?.55:.92},svg);
+  if(u.cut_off){ const xx=x+w; el("path",{d:`M${xx} ${BASE-h/2-6} l-4 6 l8 0 z`,fill:"var(--alert)"},svg); }
+  renderNow(u);
+  clearTimeout(S._silenceTimer); S._silenceTimer=setTimeout(()=>renderNow(null), Math.max(1200,(u.end-u.start)/Number($("#speed").value)*1000+900));
+  const li=document.createElement("li"); if(u.kind==="goal") li.className="goal";
+  li.innerHTML=`<span class="t">${mm(u.start)}'</span><span class="txt"></span>`;
+  li.querySelector(".txt").textContent=u.text;
+  if(u.cut_off||u.catch_up){ const n=document.createElement("span"); n.className="note"; n.textContent=u.cut_off?tt("cutNote"):tt("catchNote"); li.appendChild(n); }
+  if((S.profile==="investor"||S.profile==="analyst") && (u.kind==="goal"||u.kind==="save") && u.evidence && u.evidence[0]){
+    const b=document.createElement("button"); b.className="mini"; b.textContent=tt("whatif"); b.onclick=()=>whatIf(u,li,b); const n=document.createElement("span"); n.className="note"; n.appendChild(b); li.appendChild(n);
+  }
+  $("#feed").prepend(li); updateMeta();
+}
+function addDropped(d){ S.drops++; const svg=$("#breath"); el("circle",{cx:d.t/DUR*W,cy:BASE,r:4.5,fill:"var(--salt)",stroke:"var(--ink-2)","stroke-width":1.4},svg); updateMeta(); }
+function addEvent(e){
+  if(e.kind==="goal"){ S.score[e.team]++; const svg=$("#breath"); const x=e.t/DUR*W; el("line",{x1:x,x2:x,y1:12,y2:BASE-44,stroke:"var(--alert)","stroke-width":1.6},svg); el("circle",{cx:x,cy:12,r:4,fill:"var(--alert)"},svg); }
+  updateScore();
+}
+function addTrace(tr){ const li=document.createElement("li"); li.innerHTML=`<b></b> <span></span>`; li.querySelector("b").textContent=`${mm(tr.t)}' ${tr.agent}`; li.querySelector("span").textContent=`${tr.action} ${tr.detail||""}`; const ol=$("#trace"); ol.appendChild(li); if(ol.children.length>240) ol.removeChild(ol.firstChild); }
+
+/* ---- ledger ---- */
+const SCALE_MAX=2.2;
+function barX(v,w){ return 8+Math.max(0,Math.min(1,v/SCALE_MAX))*(w-16); }
+function ledgerRow(r){
+  const li=document.createElement("li"); li.id="L-"+r.id; li.dataset.role=r.role;
+  const dec=r.decomposition, gate=dec.gate, v=r.verdict.code;
+  const who=document.createElement("div"); who.className="who"; who.innerHTML=`<span></span><small></small>`;
+  who.querySelector("span").textContent=pName(r);
+  who.querySelector("small").textContent=`${r.role} · ${r.wage_k_week} ${tt("wage")}`;
+  const w=240,h=30; const svg=document.createElementNS(svgNS,"svg"); svg.setAttribute("viewBox",`0 0 ${w} ${h}`); svg.setAttribute("width","100%"); svg.setAttribute("role","img");
+  const be=barX(1,w); el("line",{x1:be,x2:be,y1:2,y2:h-2,stroke:"var(--ink)","stroke-width":1},svg);
+  const lo=barX(Math.max(0,r.pulse.lo),w), hi=barX(Math.max(0,r.pulse.hi),w);
+  if(gate==="insufficient"){ el("line",{x1:lo,x2:Math.max(hi,lo+2),y1:h/2,y2:h/2,stroke:"var(--ink-2)","stroke-width":3,"stroke-dasharray":"3 3",opacity:.6},svg); }
+  else { el("rect",{x:lo,y:h/2-4,width:Math.max(3,hi-lo),height:8,rx:2,fill:"var(--skill)",opacity:gate==="directional"?.55:1},svg); }
+  el("circle",{cx:barX(Math.max(0,r.pulse_observed),w),cy:h/2,r:5.5,fill:"var(--salt)",stroke:"var(--ink)","stroke-width":1.6},svg);
+  const read=document.createElement("div"); read.className="read";
+  const unit = r.role==="GK" ? tt("faced") : tt("shots");
+  let txt;
+  if(v==="no_evidence") txt=`${tt("noev")} · ${dec.n} ${unit}`;
+  else if(v==="inconclusive") txt=`${tt("inconc")} · ${dec.n} ${unit}`;
+  else if(v==="above_directional") txt=`${tt("above")} · ${dec.n} ${unit}`;
+  else if(v==="below_directional") txt=`${tt("below")} · ${dec.n} ${unit}`;
+  else txt=(v==="above"?tt("aboveD"):tt("belowD"))+` · ${dec.n} ${unit}`;
+  if(gate!=="insufficient") txt+=` · ${tt("obs")} ${r.pulse_observed.toFixed(2)} · ${tt("ev")} ${r.pulse.lo.toFixed(2)}–${r.pulse.hi.toFixed(2)} · ${tt("luck")} ${Math.round(dec.luck_share.lo*100)}–${Math.round(dec.luck_share.hi*100)}%`;
+  read.textContent=txt;
+  const mid=document.createElement("div"); mid.appendChild(svg);
+  li.append(who,mid,read); return li;
+}
+function renderLedger(rows, flashIds=[]){
+  const ul=$("#ledger"); const list=Object.values(rows).sort((a,b)=>ROLE_ORDER[a.role]-ROLE_ORDER[b.role] || b.wage_k_week-a.wage_k_week);
+  ul.innerHTML=""; for(const r of list){ const li=ledgerRow(r); if(flashIds.includes(r.id)) li.classList.add("flash"); ul.appendChild(li); }
+}
+
+async function whatIf(u,li,btn){
+  const shot=u.evidence[0]; btn.disabled=true;
+  try{
+    const r=await fetch("/api/whatif",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({seed:S.seed,shot_id:shot,goal:u.kind==="save"})}); const d=await r.json();
+    const sub=document.createElement("div"); sub.className="whatif";
+    const key = u.kind==="goal" ? Object.keys(d.players)[0] : Object.keys(d.players)[1];
+    const p=d.players[key]; const nm=pName(S.players[key]);
+    sub.textContent=`${u.kind==="goal"?tt("wiGoalOff"):tt("wiSaveOff")}: ${nm} · ${tt("wiHead")} ${fmt(p.delta_pulse_observed)} · ${tt("wiEv")} ${fmt(p.delta_pulse_evidence)}. ${tt("wiTag")}`;
+    li.appendChild(sub);
+  }catch(e){ btn.disabled=false; }
+}
+
+/* ---- stream ---- */
+function start(){
+  if(S.es){ S.es.close(); }
+  S.seed=Number($("#seed").value)||35; resetView();
+  const url=`/api/stream?seed=${S.seed}&profile=${S.profile}&lang=${S.lang}&speed=${$("#speed").value}`;
+  const es=new EventSource(url); S.es=es;
+  es.onmessage=ev=>{
+    const m=JSON.parse(ev.data); if(m.t!==undefined && m.type!=="meta") S.now=Math.max(S.now,m.t);
+    switch(m.type){
+      case "meta": S.meta=m.meta; S.players={}; m.meta.players.forEach(p=>S.players[p.id]=p);
+        $("#tA").textContent=S.lang==="ar"?m.meta.teams.KBY.name_ar:m.meta.teams.KBY.name; $("#tB").textContent=S.lang==="ar"?m.meta.teams.RMR.name_ar:m.meta.teams.RMR.name;
+        S.rows={}; m.baseline.forEach(r=>S.rows[r.id]=r); renderLedger(S.rows); break;
+      case "event": addEvent(m); break;
+      case "utterance": addUtterance(m); break;
+      case "dropped": addDropped(m); break;
+      case "ledger": Object.assign(S.rows,m.rows); renderLedger(S.rows,Object.keys(m.rows)); break;
+      case "trace": addTrace(m); break;
+      case "end": es.close(); S.now=5400; updateScore(); updateMeta(); S.rows={}; m.ledger_final.forEach(r=>S.rows[r.id]=r); renderLedger(S.rows); break;
+    }
+    updateScore();
+  };
+  es.onerror=()=>{ es.close(); };
+}
+$("#restart").onclick=start; $("#speed").onchange=start; $("#seed").onchange=start;
+$("#newMatch").onclick=()=>{ $("#seed").value=Math.floor(Math.random()*9000)+1; start(); };
+document.querySelectorAll("#langSeg button").forEach(b=>b.onclick=()=>{ S.lang=b.dataset.l; applyLang(); start(); });
+applyLang(); start();
+</script>
+</body>
+</html>

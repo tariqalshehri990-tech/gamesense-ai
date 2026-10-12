@@ -1,24 +1,47 @@
-# GameSense AI - Autonomous Football Intelligence Studio
-### Premier League x Microsoft Hackathon 2026
+# Nafas (نَفَس) — commentary that budgets attention
 
-**Live Demo:** (coming soon)
-**Video:** (coming soon)
+Built for the Microsoft × Premier League *Inside the Game* developer hackathon. **Synthetic data only**: fictional clubs (Kestrel Bay, Redmoor Rovers), fictional players and contracts.
 
-## The Problem
-Fans see *what* happened (2-1). Broadcasters need *why* it happened in <500ms, in Arabic & English.
+## The idea
+Most match-commentary projects answer *what should we say?* Nafas answers **what can this viewer still take in?**
+Each viewer profile has an attention budget that refills over match time. The Editor decides in match time what to say, when to stay silent, when to **cut a sentence off** because a bigger moment arrived, and when to compress or drop stale items.
 
-## The Solution - 3 AI Layers
-1. **Live Tactical Narrator (<500ms):** Uses Azure OpenAI in Foundry to detect HIGH_PRESS, OVERLOAD patterns and explains them.
-2. **Contextual Story Engine:** Microsoft Fabric queries 5 years PL data to calculate rarity (e.g., "1 in 28 miss") and finds historical parallels.
-3. **Predictive Fan Agent:** Cosmos DB predicts Fantasy points and substitution risk.
+Profiles: Casual fan (Arabic), Analyst (English), Audio description (Arabic), Investor (Arabic).
 
-## Microsoft Stack (Judging Criteria)
-- **GitHub + Copilot:** Full development
-- **Microsoft Foundry + GPT-4o:** Orchestrator Agent
-- **Azure AI Speech:** AR/EN/ES commentary
-- **Microsoft Fabric:** Historical data
-- **Azure Container Apps:** Deployment
+### Investor mode "ميزان"
+For each player: a **skill vs luck** split with intervals (Bayesian posterior over a finishing/keeping offset), a contract "pulse" (value delivered ÷ wage, break-even = 1.0), and a **what-if** that flips one shot. Under 100 shots the answer is *no verdict*.
 
-## How to Run
+## Pipeline (the 5 required stages)
+| Stage | Component |
+|---|---|
+| Ingest | `simulator.py` synthetic events, `Scout` detects moments |
+| Interpret | `xg.py` shot quality, `stats.py` skill/luck engine |
+| Explain | `Explainer` calls fact tools, `phrasebook.py` templates, optional Foundry rewrite |
+| Render | `attention.py` scheduler → SSE stream → RTL-first UI with a "breath line" |
+| Personalize | per-profile budgets, language and style |
+
+Agents: Scout, Explainer, Editor, DialectDesk, Auditor (deterministic: numbers, names and advice wording must derive from facts), Conductor. The fact layer is exposed as an **MCP server** (`python -m nafas.mcp_server --http`).
+
+## Run
+```bash
 pip install -r requirements.txt
-streamlit run app.py
+uvicorn nafas.server:app --port 8000      # open http://localhost:8000
+pip install -r requirements-dev.txt && pytest
+```
+Works fully offline (template backend). To enable Foundry phrasing: `pip install agent-framework-foundry azure-identity`, set `FOUNDRY_PROJECT_ENDPOINT` and `FOUNDRY_MODEL`. **That path is untested.**
+
+## Azure
+`Dockerfile` included. Deploy: `az containerapp up --name nafas --source . --ingress external --target-port 8000`. Microsoft pieces: Agent Framework + Foundry (optional backend), MCP, Container Apps, Azure AI Speech (planned voice output, not wired).
+
+## Validation
+- Simulator calibrated to Premier League averages (~25 shots/match, ~0.115 xG/shot, ~11% conversion).
+- Skill recovery: simulated players have hidden true skill; 90% intervals covered it ~88–90% of the time; test checks positive-skill players rank above negative.
+- 11 automated tests (`pytest`).
+
+## What we refuse to claim
+- No price prediction, no buy/sell advice (the Auditor blocks such wording).
+- Not real data. The xG model and simulator are related, so recovery is partly circular.
+- Goals→money conversion is a labelled synthetic assumption (median positive-value player = break-even).
+- The pulse band covers skill uncertainty only. What-if is computed against the full-match ledger.
+- Auto-detection of events from video is simulated, not implemented.
+- Arabic text is Saudi-flavoured; Azure's ar-SA voices read Modern Standard Arabic, not dialect.
