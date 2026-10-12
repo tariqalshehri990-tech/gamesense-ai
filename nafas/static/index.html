@@ -146,7 +146,7 @@ details.trace b{color:var(--ink);font-weight:600}
       <div class="seg" id="langSeg"><button data-l="ar" aria-pressed="true">عربي</button><button data-l="en" aria-pressed="false">English</button></div>
       <label><span id="lblSpeed"></span> <select id="speed"><option value="1">1×</option><option value="6">6×</option><option value="30">30×</option><option value="60" selected>60×</option><option value="150">150×</option><option value="600">600×</option></select></label>
       <label><span id="lblSeed"></span> <input id="seed" type="number" min="0" max="10000" value="35"></label>
-      <button class="btn" id="voiceBtn" aria-pressed="false"></button>
+      <button class="btn" id="voiceBtn" aria-pressed="false"></button><span id="voiceMsg" style="max-width:26ch;font-size:.8rem;color:var(--gold)" role="status"></span>
       <button class="btn" id="restart"></button>
       <button class="btn" id="newMatch"></button>
     </div>
@@ -195,7 +195,7 @@ const T = {
   ar: {
     tagline:"تعليق يصرف انتباه المشاهد كأنه ميزانية، ودفتر مستثمر يفصل المهارة عن الحظ. بيانات تجريبية بالكامل.",
     tabs:{casual:"مشجع عادي",analyst:"محلل",blind:"وصف صوتي",investor:"مستثمر"},
-    voiceOn:"🔊 الصوت شغّال", voiceOff:"🔈 شغّل الصوت", voiceHint:"الصوت يشتغل زين على 6× أو 1×.", speed:"السرعة", seed:"المباراة", restart:"إعادة", newMatch:"مباراة جديدة",
+    voiceOn:"🔊 الصوت شغّال", voiceOff:"🔈 شغّل الصوت", voiceHint:"الصوت يشتغل زين على 6× أو 1×.", noVoice:"جهازك ما فيه صوت عربي. الأنغام شغّالة، ثبّت صوت عربي من إعدادات النظام.", voiceTest:"الصوت شغّال", speed:"السرعة", seed:"المباراة", restart:"إعادة", newMatch:"مباراة جديدة",
     speech:"كلام", silence:"صمت", cut:"جمل قُطعت", catch:"اختصارات", drop:"لحظات أُسقطت",
     silentNow:"صمت. ما فيه شي يستاهل الكلام الحين.", cutNote:"قُطعت لأن لحظة أهم وصلت.", catchNote:"قيلت متأخرة فاختُصرت.",
     ledgerH:"دفتر القيمة", ledgerSub:"كل لاعب وعقده (وهمي). الدائرة هي الرقم الظاهر، والشريط هو التقدير المبني على الأدلة. خط التعادل عند 1.",
@@ -210,7 +210,7 @@ const T = {
   en: {
     tagline:"Commentary that spends each viewer's attention like a budget, and an investor ledger that separates skill from luck. All data is synthetic.",
     tabs:{casual:"Casual fan",analyst:"Analyst",blind:"Audio description",investor:"Investor"},
-    voiceOn:"🔊 Voice on", voiceOff:"🔈 Voice off", voiceHint:"Voice works best at 6× or 1×.", speed:"Speed", seed:"Match", restart:"Restart", newMatch:"New match",
+    voiceOn:"🔊 Voice on", voiceOff:"🔈 Voice off", voiceHint:"Voice works best at 6× or 1×.", noVoice:"No Arabic voice on this device. Cues still play.", voiceTest:"Voice is on", speed:"Speed", seed:"Match", restart:"Restart", newMatch:"New match",
     speech:"Speech", silence:"Silence", cut:"Cut off", catch:"Catch-ups", drop:"Dropped",
     silentNow:"Silence. Nothing worth saying right now.", cutNote:"Cut off because a bigger moment arrived.", catchNote:"Said late, so it was shortened.",
     ledgerH:"Value ledger", ledgerSub:"Each player and their (fictional) contract. The circle is the headline number, the bar is the evidence-based estimate. Break-even is 1.",
@@ -223,21 +223,37 @@ const T = {
     title:"Attention over the match", feedH:"Match tape", feedSub:"Every line that was spoken, and when. Cut-off and dropped lines show on the breath line above.", roles:{FWD:"Forwards",MID:"Midfield",DEF:"Defenders",GK:"Goalkeepers"}, axisLo:"below break-even", axisHi:"above break-even", axisBE:"break-even 1.0", legendObs:"Headline number", legendEv:"Evidence range", legendLuck:"Luck share"
   }
 };
-const VOICE={on:false,azure:false,audio:null};
+const VOICE={azure:false,audio:null,ctx:null,voices:[]};
 fetch("/api/health").then(r=>r.json()).then(j=>{VOICE.azure=!!j.azure_tts;}).catch(()=>{});
+function loadVoices(){ try{ VOICE.voices=speechSynthesis.getVoices()||[]; }catch(e){ VOICE.voices=[]; } }
+try{ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }catch(e){}
+function pickVoice(lang){ const want=lang==="ar"?"ar":"en"; return VOICE.voices.find(v=>v.lang.replace("_","-").toLowerCase().startsWith(lang==="ar"?"ar-sa":"en-gb"))||VOICE.voices.find(v=>v.lang.toLowerCase().startsWith(want))||null; }
+function voiceMsg(t){ const m=document.getElementById("voiceMsg"); if(m) m.textContent=t||""; }
 function voiceStop(){ try{ speechSynthesis.cancel(); }catch(e){} if(VOICE.audio){ VOICE.audio.pause(); VOICE.audio=null; } }
+/* non-speech cues (always audible, no voice needed): goal = rising two-tone, cut-off = short tick */
+function cue(kind){
+  try{
+    VOICE.ctx=VOICE.ctx||new (window.AudioContext||window.webkitAudioContext)(); const c=VOICE.ctx; if(c.state==="suspended") c.resume();
+    const tones = kind==="goal" ? [[523,0,.16],[659,.14,.16],[784,.28,.34]] : kind==="cut" ? [[220,0,.07]] : [[440,0,.05]];
+    for(const [f,t0,d] of tones){ const o=c.createOscillator(), g=c.createGain(); o.type=kind==="goal"?"triangle":"sine"; o.frequency.value=f; o.connect(g); g.connect(c.destination);
+      const t=c.currentTime+t0; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(kind==="goal"?0.22:0.12,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+d); o.start(t); o.stop(t+d+0.02); }
+  }catch(e){}
+}
 async function voiceSay(text,lang){
   voiceStop();
   if(VOICE.azure){
     try{
       const r=await fetch("/api/tts",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({text,lang})});
-      if(r.ok){ const a=new Audio(URL.createObjectURL(await r.blob())); VOICE.audio=a; await a.play(); return; }
+      if(r.ok){ const a=new Audio(URL.createObjectURL(await r.blob())); VOICE.audio=a; await a.play(); voiceMsg("Azure AI Speech"); return; }
     }catch(e){}
   }
   try{
-    const u=new SpeechSynthesisUtterance(text); u.lang=lang==="ar"?"ar-SA":"en-GB"; u.rate=1.05;
-    const vs=speechSynthesis.getVoices(); const v=vs.find(x=>x.lang.replace("_","-").toLowerCase().startsWith(u.lang.toLowerCase()))||vs.find(x=>x.lang.toLowerCase().startsWith(lang));
-    if(v) u.voice=v; speechSynthesis.speak(u);
+    if(!("speechSynthesis" in window)){ voiceMsg(tt("noVoice")); return; }
+    loadVoices(); const v=pickVoice(lang);
+    if(!v && lang==="ar"){ voiceMsg(tt("noVoice")); return; }
+    const u=new SpeechSynthesisUtterance(text); u.lang=v?v.lang:(lang==="ar"?"ar-SA":"en-GB"); if(v) u.voice=v; u.rate=1.05;
+    voiceMsg(v?v.name:"");
+    setTimeout(()=>{ try{ speechSynthesis.speak(u); }catch(e){} },80);  // Chrome drops speak() issued right after cancel()
   }catch(e){}
 }
 const $ = s => document.querySelector(s);
@@ -293,7 +309,7 @@ function addUtterance(u){
   el("rect",{x,y:BASE-h/2,width:w,height:h,rx:1.2,fill: u.kind==="ledger"?"var(--mint)":"var(--chalk)",opacity: u.cut_off?.6:.95},svg);
   if(u.cut_off){ const xx=x+w; el("path",{d:`M${xx} ${BASE-h/2-6} l-4 6 l8 0 z`,fill:"var(--flare)"},svg); }
   renderNow(u);
-  if(S.voice) voiceSay(u.text,u.lang||S.lang);
+  if(S.voice){ if(u.kind==="goal") cue("goal"); else if(u.cut_off) cue("cut"); voiceSay(u.text,u.lang||S.lang); }
   clearTimeout(S._silenceTimer); S._silenceTimer=setTimeout(()=>renderNow(null), Math.max(1200,(u.end-u.start)/Number($("#speed").value)*1000+900));
   const li=document.createElement("li"); li.className=(u.kind==="goal"?"goal ":"")+"new";
   li.innerHTML=`<span class="t">${mm(u.start)}'</span><span class="txt"></span>`;
@@ -400,7 +416,7 @@ function start(){
   };
   es.onerror=()=>{ es.close(); };
 }
-$("#voiceBtn").onclick=()=>{ S.voice=!S.voice; $("#voiceBtn").setAttribute("aria-pressed",S.voice); $("#voiceBtn").textContent=S.voice?tt("voiceOn"):tt("voiceOff"); if(!S.voice) voiceStop(); else { try{speechSynthesis.getVoices();}catch(e){} } };
+$("#voiceBtn").onclick=()=>{ S.voice=!S.voice; $("#voiceBtn").setAttribute("aria-pressed",S.voice); $("#voiceBtn").textContent=S.voice?tt("voiceOn"):tt("voiceOff"); if(!S.voice){ voiceStop(); voiceMsg(""); } else { cue("goal"); voiceSay(tt("voiceTest"),S.lang); } };
 $("#restart").onclick=start; $("#speed").onchange=start; $("#seed").onchange=start;
 $("#newMatch").onclick=()=>{ $("#seed").value=Math.floor(Math.random()*9000)+1; start(); };
 document.querySelectorAll("#langSeg button").forEach(b=>b.onclick=()=>{ S.lang=b.dataset.l; applyLang(); start(); });
