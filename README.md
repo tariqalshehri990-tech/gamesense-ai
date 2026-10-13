@@ -48,7 +48,7 @@ The standalone `demo/index.html` carries pre-rendered clips so it speaks on any 
 - Not real data. The xG model and simulator are related, so recovery is partly circular.
 - Goals→money conversion is a labelled synthetic assumption (median positive-value player = break-even).
 - The pulse band covers skill uncertainty only. What-if is computed against the full-match ledger.
-- Auto-detection of events from video is simulated, not implemented.
+- Auto-detection of events from video is implemented (`nafas/vision`) but validated only on a synthetic clip; the live app and `demo/index.html` still stream pre-generated synthetic events.
 - Arabic text is Saudi-flavoured; Azure's ar-SA voices read Modern Standard Arabic, not dialect.
 
 ## Video analysis (camera → events → Nafas)
