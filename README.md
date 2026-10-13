@@ -1,9 +1,9 @@
-# Nafas (نَفَس) — commentary that budgets attention
+# Tariq (طارق) — commentary that budgets attention
 
 Built for the Microsoft × Premier League *Inside the Game* developer hackathon. **Synthetic data only**: fictional clubs (Kestrel Bay, Redmoor Rovers), fictional players and contracts.
 
 ## The idea
-Most match-commentary projects answer *what should we say?* Nafas answers **what can this viewer still take in?**
+Most match-commentary projects answer *what should we say?* Tariq answers **what can this viewer still take in?**
 Each viewer profile has an attention budget that refills over match time. The Editor decides in match time what to say, when to stay silent, when to **cut a sentence off** because a bigger moment arrived, and when to compress or drop stale items.
 
 Profiles: Casual fan (Arabic), Analyst (English), Audio description (Arabic), Investor (Arabic).
@@ -51,9 +51,9 @@ The standalone `demo/index.html` carries pre-rendered clips so it speaks on any 
 - Auto-detection of events from video is implemented (`nafas/vision`) but validated only on a synthetic clip; the live app and `demo/index.html` still stream pre-generated synthetic events.
 - Arabic text is Saudi-flavoured; Azure's ar-SA voices read Modern Standard Arabic, not dialect.
 
-## Video analysis (camera → events → Nafas)
+## Video analysis (camera → events → Tariq)
 
-`nafas/vision/` turns match video into the same `Match`/`Shot` facts the rest of Nafas runs on: background subtraction and kit-colour segmentation per frame, pitch-landmark calibration (RANSAC homography), Kalman + Hungarian tracking of 16 players and the ball, then possession / pass / shot / save / goal inference from the ball trajectory (`events.py`), a bridge into the xG + skill-vs-luck engine (`bridge.py`), and `compose.py`, which renders the broadcast overlay (tracking rings, pass lines, shot cones, radar, Arabic/English captions, breath lanes, live ledger card) and mixes the narration.
+`nafas/vision/` turns match video into the same `Match`/`Shot` facts the rest of Tariq runs on: background subtraction and kit-colour segmentation per frame, pitch-landmark calibration (RANSAC homography), Kalman + Hungarian tracking of 16 players and the ball, then possession / pass / shot / save / goal inference from the ball trajectory (`events.py`), a bridge into the xG + skill-vs-luck engine (`bridge.py`), and `compose.py`, which renders the broadcast overlay (tracking rings, pass lines, shot cones, radar, Arabic/English captions, breath lanes, live ledger card) and mixes the narration.
 
 ```
 pip install -r requirements-vision.txt && playwright install chromium   # HUD is rendered in Chromium for Arabic shaping

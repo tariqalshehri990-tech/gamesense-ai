@@ -1,4 +1,4 @@
-"""Vision layer: geometry, calibration, event→Nafas bridge and HUD helpers (no video decode needed)."""
+"""Vision layer: geometry, calibration, event→Tariq bridge and HUD helpers (no video decode needed)."""
 import numpy as np
 
 from nafas.vision import bridge, compose, pitch

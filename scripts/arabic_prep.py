@@ -1,4 +1,4 @@
-"""Prepare Nafas Arabic commentary for a neural TTS voice that expects diacritised text (Piper ar_JO-kareem).
+"""Prepare Tariq Arabic commentary for a neural TTS voice that expects diacritised text (Piper ar_JO-kareem).
 
 The commentary comes from a small closed phrasebook, so a hand-written lexicon of vocalised forms is reliable.
 Unknown words are passed through unchanged and reported, so a new phrase never fails silently.

@@ -35,9 +35,9 @@ def page(body: str) -> str:
 def title() -> str:
     return page("""<div class='pad' style='display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px'>
 <svg width='220' height='130' viewBox='0 0 44 26'><path d='M1 13h9l3-11 5 22 5-16 3 5h18' fill='none' stroke='#4FD6A0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>
-<h1 style='font-size:230px;line-height:1'>نَفَس</h1>
-<h1 style='font-size:92px;letter-spacing:.04em'>Nafas</h1>
-<p style='font-size:44px;color:var(--chalk2);margin-top:14px'>Commentary that spends attention like a budget</p></div>""")
+<h1 style='font-size:230px;line-height:1'>طارق</h1>
+<h1 style="font-size:92px;letter-spacing:.04em">Tariq</h1>
+<p style='font-size:44px;color:var(--chalk2);margin-top:14px'>The star that cuts through the noise</p></div>""")
 
 
 def problem(n: int) -> str:

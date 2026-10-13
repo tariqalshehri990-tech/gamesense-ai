@@ -68,7 +68,7 @@ html,body{width:1920px;height:1080px;background:transparent;overflow:hidden;font
 #lanes h4{position:absolute;left:24px;top:-4px;font-size:20px;color:var(--chalk2);font-weight:400}
 </style></head><body>
 <div id="bug" class="abs glass"></div>
-<div id="brand" class="abs"><svg viewBox="0 0 44 26"><path d="M1 13h9l3-11 5 22 5-16 3 5h18" fill="none" stroke="#4FD6A0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nm">نَفَس</span><span class="tag" id="tag"></span></div>
+<div id="brand" class="abs"><svg viewBox="0 0 44 26"><path d="M1 13h9l3-11 5 22 5-16 3 5h18" fill="none" stroke="#4FD6A0" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="nm">طارق</span><span class="tag" id="tag"></span></div>
 <div id="metrics" class="abs glass"></div>
 <div id="shotcard" class="abs glass"></div>
 <div id="ledger" class="abs glass"></div>

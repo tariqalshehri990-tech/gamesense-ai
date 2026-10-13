@@ -1,4 +1,4 @@
-"""Video-derived events -> the Nafas facts layer (xG, ledger, moments, commentary)."""
+"""Video-derived events -> the Tariq facts layer (xG, ledger, moments, commentary)."""
 from __future__ import annotations
 
 from ..agents import HISTORY_MATCHES, facts_for_match

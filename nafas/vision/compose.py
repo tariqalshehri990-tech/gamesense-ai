@@ -1,9 +1,9 @@
-"""Compose the broadcast video: tracked match footage + Nafas commentary, ledger, metrics and radar graphics.
+"""Compose the broadcast video: tracked match footage + Tariq commentary, ledger, metrics and radar graphics.
 
     PYTHONPATH=. python -m nafas.vision.compose raw.mp4 out.mp4 [--cache dets.pkl] [--no-audio]
 
 Everything on screen is derived from the video itself: tracking rings, pass lines, shot cones and the radar come
-from the tracker's own output (not from the generator's ground truth); the words come from the Nafas session built on
+from the tracker's own output (not from the generator's ground truth); the words come from the Tariq session built on
 the video-derived events.
 """
 from __future__ import annotations
@@ -141,7 +141,7 @@ class Story:
             s0 = u["start"] - T0
             if s0 <= t <= u["end"] - T0 + 0.4:
                 cap = dict(kind="goal" if u["kind"] == "goal" else u["kind"], cut=bool(u["cut_off"]),
-                           who="تعليق نَفَس" if u["kind"] != "ledger" else "دفتر المهارة والحظ",
+                           who="تعليق طارق" if u["kind"] != "ledger" else "دفتر المهارة والحظ",
                            min=clock(t), ar=u["text"], en=u["en"])
         lanes = []
         for prof, lab in (("casual", "مشجّع"), ("blind", "وصف صوتي"), ("investor", "مستثمر")):

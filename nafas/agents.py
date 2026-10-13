@@ -1,4 +1,4 @@
-"""Nafas agent team: Scout, Explainer, Editor, DialectDesk, Auditor, Conductor.
+"""Tariq agent team: Scout, Explainer, Editor, DialectDesk, Auditor, Conductor.
 
 Roles and handoffs
   Scout        reads the event stream and proposes moments (goal, save, press spell, chaos spell...)

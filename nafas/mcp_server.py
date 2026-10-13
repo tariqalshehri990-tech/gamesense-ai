@@ -1,7 +1,7 @@
 """Match-facts MCP server.
 
 Exposes the fact layer as MCP tools so any MCP client (Microsoft Agent Framework via
-`MCPStreamableHTTPTool`, Claude, VS Code...) can query the same numbers the Nafas agents use.
+`MCPStreamableHTTPTool`, Claude, VS Code...) can query the same numbers the Tariq agents use.
 
 Run:
     python -m nafas.mcp_server                      # stdio

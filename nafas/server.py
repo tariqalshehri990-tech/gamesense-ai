@@ -1,4 +1,4 @@
-"""HTTP API and live stream for the Nafas demo.
+"""HTTP API and live stream for the Tariq demo.
 
   GET  /                      the demo UI
   GET  /api/health            liveness
@@ -29,7 +29,7 @@ from .facts import MatchFacts
 DEFAULT_SEED = int(os.environ.get("NAFAS_SEED", "35"))
 STATIC = Path(__file__).parent / "static"
 
-app = FastAPI(title="Nafas", version="0.1.0")
+app = FastAPI(title="Tariq", version="0.1.0")
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 _backend = make_backend()
 
